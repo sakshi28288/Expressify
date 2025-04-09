@@ -121,6 +121,6 @@ This project is for educational purposes and part of a college academic submissi
 
 - [FER-2013 Dataset](https://www.kaggle.com/datasets/msambare/fer2013)
 - [OMDb API](https://www.omdbapi.com/)
-- Faculty support and project mentors
+- Faculty support
 
 ```
