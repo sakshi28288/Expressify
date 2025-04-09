@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ExpressiFy - Emotion-Based Movie Recommender</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: radial-gradient(circle, #2d2d2d, #1a1a1a);
+      color: #eee;
+      text-align: center;
+      overflow-x: hidden;
+      position: relative;
+      transition: background 0.6s ease;
+    }
+
+    canvas.particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .animated-title {
+      font-size: 2.8em;
+      color: #f5deb3;
+      margin: 30px 0 10px;
+      font-weight: bold;
+      display: inline-block;
+      animation: popIn 1s ease-out forwards;
+    }
+
+    .animated-title .shine {
+      background: linear-gradient(90deg, #c19a6b, #fff7e6, #c19a6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% auto;
+      animation: shimmer 2s linear infinite;
+    }
+
+    .animated-title .typewriter-text::after {
+      content: '|';
+      animation: blink-cursor 0.7s infinite;
+      color: #f5deb3;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes blink-cursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    #clock {
+      margin: 10px;
+      font-size: 1.2em;
+      color: #ccc;
+    }
+
+    #video {
+      width: 460px;
+      height: 345px;
+      border: 6px solid #8b5e3c;
+      border-radius: 14px;
+      margin-top: 20px;
+      box-shadow: 0 0 20px #8b5e3c;
+    }
+
+    #capture-btn {
+      margin-top: 25px;
+      padding: 14px 28px;
+      background-color: #6f4e37;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.05em;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    #capture-btn:hover {
+      background-color: #5a3c29;
+      transform: scale(1.05);
+    }
+
+    #emotion-result {
+      margin-top: 25px;
+      font-size: 1.3em;
+      color: #ffcc80;
+      font-weight: 500;
+    }
+
+    #quote-box {
+      margin-top: 10px;
+      font-style: italic;
+      font-size: 1.1em;
+      color: #bbb;
+    }
+
+    #movies {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 40px auto;
+      max-width: 1200px;
+    }
+
+    .movie {
+      background-color: #2a2a2a;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      margin: 15px;
+      width: 200px;
+      padding: 12px;
+      transition: transform 0.3s ease;
+    }
+
+    .movie:hover {
+      transform: translateY(-8px);
+    }
+
+    .movie img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .movie h3 {
+      font-size: 1em;
+      margin: 10px 0 5px;
+    }
+
+    .movie p {
+      font-size: 0.85em;
+      color: #aaa;
+    }
+
+    #emoji-trail {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      font-size: 2rem;
+      animation: floatUp 4s linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translate(-50%, 0); opacity: 1; }
+      100% { transform: translate(-50%, -200px); opacity: 0; }
+    }
+
+    #mood-blob {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 80px;
+      height: 80px;
+      background: #ffc107;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8em;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.9; }
+    }
+  </style>
+</head>
+<body>
+  <canvas class="particles"></canvas>
+
+  <h1 class="animated-title">
+    <span class="shine">🎬 ExpressiFy:</span> <span class="typewriter-text">Discover Movies by Emotion</span>
+  </h1>
+
+  <div id="clock"></div>
+  <video id="video" autoplay></video><br>
+  <button id="capture-btn">🎥 Detect Emotion</button>
+  <div id="emotion-result"></div>
+  <div id="quote-box"></div>
+  <div id="movies"></div>
+
+  <!-- Team Section -->
+  <div style="margin-top: 60px; padding: 40px 20px; background-color: #1f1b18; color: #fff; border-top: 2px solid #8B4513;">
+    <h2 style="font-size: 2em; margin-bottom: 30px;">👩‍💻 Developed By</h2>
+    <div style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+      <div style="background: #2e2622; border-radius: 12px; padding: 20px 30px; width: 260px; box-shadow: 0 6px 12px rgba(0,0,0,0.4);">
+        <h3 style="color: #f5deb3; font-size: 1.3em;">Sakshi Sinha</h3>
+        <p style="margin: 6px 0;">22BCE8875</p>
+      </div>
+      <div style="background: #2e2622; border-radius: 12px; padding: 20px 30px; width: 260px; box-shadow: 0 6px 12px rgba(0,0,0,0.4);">
+        <h3 style="color: #f5deb3; font-size: 1.3em;">Janavi Singh</h3>
+        <p style="margin: 6px 0;">22BCE8501</p>
+      </div>
+    </div>
+    <p style="margin-top: 30px; font-size: 0.9em; color: #ccc;">Team ExpressiFy | VIT University</p>
+  </div>
+
+  <div id="emoji-trail"></div>
+  <div id="mood-blob">💬</div>
+
+  <script>
+    const video = document.getElementById('video');
+    const captureBtn = document.getElementById('capture-btn');
+    const emotionResult = document.getElementById('emotion-result');
+    const moviesDiv = document.getElementById('movies');
+    const clock = document.getElementById('clock');
+    const quoteBox = document.getElementById('quote-box');
+    const emojiTrail = document.getElementById('emoji-trail');
+    const moodBlob = document.getElementById('mood-blob');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => { video.srcObject = stream; })
+      .catch(err => alert("Webcam access denied."));
+
+    function updateClock() {
+      const now = new Date();
+      clock.innerText = `🕒 ${now.toLocaleTimeString()}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    captureBtn.addEventListener('click', () => {
+      emotionResult.innerText = "Detecting emotion...";
+      moviesDiv.innerHTML = "";
+      quoteBox.innerHTML = "";
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL('image/jpeg');
+
+      fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const emotion = data.emotion;
+        emotionResult.innerText = `Detected Emotion: ${emotion}`;
+        emojiTrail.innerText = getEmoji(emotion);
+        changeTheme(emotion);
+        speak(`Hey! Looks like you're feeling ${emotion}`);
+        getQuote(emotion);
+        getMovies(emotion);
+      });
+    });
+
+    function getEmoji(emotion) {
+      const map = { happy: '😊', sad: '😢', angry: '😠', surprise: '😲', neutral: '😐' };
+      return map[emotion] || '😶';
+    }
+
+    function changeTheme(emotion) {
+      const colorMap = {
+        happy: '#ffd54f',
+        sad: '#64b5f6',
+        angry: '#e57373',
+        surprise: '#ba68c8',
+        neutral: '#90a4ae'
+      };
+      const color = colorMap[emotion] || '#ffffff';
+      document.body.style.background = `linear-gradient(to bottom right, #1a1a1a, ${color})`;
+      document.getElementById('video').style.boxShadow = `0 0 20px ${color}`;
+      moodBlob.style.background = color;
+    }
+
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(msg);
+    }
+
+    function getQuote(emotion) {
+      const quotes = {
+        happy: "Happiness is a direction, not a place.",
+        sad: "Every storm runs out of rain.",
+        angry: "For every minute you are angry, you lose 60 seconds of peace.",
+        surprise: "Surprises are the joy of life.",
+        neutral: "Keep calm and carry on."
+      };
+      quoteBox.innerText = quotes[emotion] || '';
+    }
+
+    function getMovies(emotion) {
+      fetch(`/api/get-movies?emotion=${emotion}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.movies || data.movies.length === 0) {
+            moviesDiv.innerHTML = "<p>No movie recommendations found.</p>";
+            return;
+          }
+          data.movies.forEach(movie => {
+            const movieCard = document.createElement('div');
+            movieCard.className = 'movie';
+            movieCard.innerHTML = `
+              <img src="${movie.poster}" alt="${movie.title}">
+              <h3>${movie.title}</h3>
+              <p>${movie.description || ''}</p>
+            `;
+            movieCard.onclick = () => {
+              window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(movie.title + ' trailer')}`, '_blank');
+            }
+            moviesDiv.appendChild(movieCard);
+          });
+        });
+    }
+  </script>
+</body>
+</html>
