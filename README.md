@@ -69,8 +69,8 @@ pip install -r expressify_backend/requirements.txt
 ```
 
 > ⚠️ If you face version conflicts, manually adjust the TensorFlow, NumPy, etc. versions.
-> If you want to RUN the project download this file  
-https://drive.google.com/file/d/1iZB2ZM1aMfARL0qv0BZn-YT2gKbgykdU/view?usp=drive_link
+> If you want to RUN the project download this file
+https://drive.google.com/file/d/1JPxCY41yyzeIxZgisOXp_V8vCL2KRujU/view?usp=sharing
 ### 4. Run the Flask App
 ```bash
 cd expressify_backend
